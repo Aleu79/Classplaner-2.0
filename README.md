@@ -75,3 +75,9 @@ Classplanner_2.0/
 ├── 📄 go.sum
 └── 📄 README.md
 ```
+# Bibliotecas utilizadas
+
+* gorm.io/gorm
+* gofiber/fiber/v2
+* joho/godotenv
+* go-deepseek/deepseek
