@@ -70,6 +70,7 @@ Classplanner_2.0/
 │
 ├── 📄 .env                                # Variables de entorno (DB_URL, JWT_SECRET, etc.)
 ├── 📄 .gitignore
+├── 📄 main.go                             # Entrypoint (cmd, parametros de entrada, etc.)
 ├── 📄 go.mod
 ├── 📄 go.sum
 └── 📄 README.md
