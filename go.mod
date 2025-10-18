@@ -1,4 +1,4 @@
-module github.com/tu-usuario/classplanner
+module classplanner-2.0
 
 go 1.21
 
