@@ -3,7 +3,7 @@ package repository
 import (
 	"database/sql"
 
-	"classplanner-2.0/internal/model"
+	"classplanner/internal/model"
 )
 
 type AddressRepository interface {
