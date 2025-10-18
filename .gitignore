@@ -1,0 +1,10 @@
+# ignore vendor
+vendor/
+logs/**
+go.sum
+
+
+#credentials
+.env
+.credentials
+.env.production

@@ -1,3 +1,26 @@
+# Instalacion
+
+* Clonar el repositorio:
+
+```
+git clone https://github.com/Aleu79/Classplaner-2.0/
+```
+
+* Instalar dependencias:
+```
+go mod install
+```
+
+* Ejecutar utilizando la siguiente configuracion:
+```
+go run main.go
+```
+
+* Compilar el proyecto:
+```
+go build .
+```
+
 # Estructura de Carpetas
 
 ```
