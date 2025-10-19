@@ -36,6 +36,39 @@ func Microservice() {
 		MaxAge:        36000,
 	})
 
+	//handlers
+	// app.Get("/calendar", getCalendar)
+	// app.Get("/calendar/:class_token", GetCalendarWithToken)
+
+	// //classes
+	// app.Get("/classes", GetClasses)
+	// app.Post("/classes", createClass)
+	// app.Post("/joinClass", joinClass)
+
+	// //tasks
+	// app.Get("/tasks", GetTasks)
+	// app.Post("/tasks", createTask)
+
+	// //submissions
+	// app.Get("/submission", GetSubmission)
+	// app.Get("/submissions", GetSubs)
+	// app.Post("/submission", createSubmission)
+	// app.Put("/submission/:id_submission", updateSubmission)
+
+	// app.Get("/califications", GetCalifications)
+	// app.Get("/usersclass", GetUsersFromClass)
+
+	// //comments
+	// app.Get("/comments", GetComments)
+	// app.Post("/comments", createComment)
+
+	// //user
+	// app.Get("/user", GetUser)
+	// app.Delete("/user", DeleteUser)
+	// app.Put("/user", updateUser)
+	// app.Post("/login", login)
+	// app.Post("/register", register)
+
 	// initialize the api
 	app.Listen(":3000")
 }
