@@ -14,6 +14,6 @@ func New(db *sql.DB) *Repository {
 	return &Repository{
 		db:             db,
 		UserStorage:    &userSQL{db: db},
-		AddressStorage: &AdressSQL{db: db},
+		AddressStorage: &AddressSQL{db: db},
 	}
 }
