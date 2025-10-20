@@ -1,6 +1,7 @@
 package users
 
 import (
+	"classplanner/internal/infrastructure/database"
 	"classplanner/internal/model"
 	"classplanner/internal/service"
 	"strconv"
@@ -97,4 +98,12 @@ func (h *UserHandler) Exists(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"exists": exists})
+}
+
+func GetUser(c *fiber.Ctx) error {
+	users, err := database.DBInstance.Repository.UserStorage.GetAll()
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.JSON(users)
 }

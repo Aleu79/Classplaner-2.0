@@ -13,16 +13,16 @@ type AddressRepository interface {
 	DeleteAddress(id int) error
 }
 
-type AdressSQL struct {
+type AddressSQL struct {
 	db *sql.DB
 }
 
 func NewAddressRepository(db *sql.DB) AddressRepository {
-	return &AdressSQL{db: db}
+	return &AddressSQL{db: db}
 }
 
 // Obtener todas las direcciones de un usuario
-func (r *AdressSQL) GetByUserID(userID int) ([]*model.Address, error) {
+func (r *AddressSQL) GetByUserID(userID int) ([]*model.Address, error) {
 	q := `
 		SELECT id, user_id, name, is_primary, city_id, province_id,
 		       address1, address2, phone, email, post_code,
@@ -54,7 +54,7 @@ func (r *AdressSQL) GetByUserID(userID int) ([]*model.Address, error) {
 }
 
 // Crear una nueva dirección
-func (r *AdressSQL) CreateAddress(address *model.Address) (*model.Address, error) {
+func (r *AddressSQL) CreateAddress(address *model.Address) (*model.Address, error) {
 	q := `
 		INSERT INTO addresses (
 			user_id, name, is_primary, city_id, province_id,
@@ -78,7 +78,7 @@ func (r *AdressSQL) CreateAddress(address *model.Address) (*model.Address, error
 }
 
 // Actualizar una dirección existente
-func (r *AdressSQL) UpdateAddress(id int, address *model.Address) (*model.Address, error) {
+func (r *AddressSQL) UpdateAddress(id int, address *model.Address) (*model.Address, error) {
 	q := `
 		UPDATE addresses
 		SET name = $1, is_primary = $2, city_id = $3, province_id = $4,
@@ -101,7 +101,7 @@ func (r *AdressSQL) UpdateAddress(id int, address *model.Address) (*model.Addres
 }
 
 // Eliminar (lógicamente o físicamente) una dirección
-func (r *AdressSQL) DeleteAddress(id int) error {
+func (r *AddressSQL) DeleteAddress(id int) error {
 	q := `
 		UPDATE addresses
 		SET deleted_at = NOW()
