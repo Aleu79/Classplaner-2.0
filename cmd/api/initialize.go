@@ -38,6 +38,7 @@ func Initialize() *AppDependencies {
 	app.Use(middleware.MiddleCsrf())
 	app.Use(middleware.LoggerStarter())
 	app.Use(middleware.HealthCheck())
+	app.Use(middleware.MiddleHelmet())
 
 	// Serve static files
 	app.Static(os.Getenv("UPLOADS_URL"), os.Getenv("UPLOADS_PATH"), fiber.Static{
