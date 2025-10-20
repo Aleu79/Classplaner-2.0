@@ -19,9 +19,10 @@ type DatabaseInstance struct {
 // database instance that contains the conection & the repository
 var DBInstance *DatabaseInstance
 
-func Connect() {
+func Connect() *DatabaseInstance {
 	// load env variables
 	utils.LoadEnv()
+
 	// Define the connection string with PostgreSQL credentials
 	user := os.Getenv("DATABASE_USER")
 	passwd := os.Getenv("DATABASE_PASSWORD")
@@ -34,6 +35,7 @@ func Connect() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	// test connection
 	if err := db.Ping(); err != nil {
 		log.Fatalf("Database unreachable: %v", err)
@@ -41,7 +43,10 @@ func Connect() {
 
 	DBInstance = &DatabaseInstance{DB: db}
 	DBInstance.Repository = repository.New(db)
-	log.Println("Database connected successfully")
+
+	log.Println("✅ Database connected successfully")
+
+	return DBInstance
 }
 
 // Ready checks DB connection health
