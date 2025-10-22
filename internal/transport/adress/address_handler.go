@@ -3,6 +3,7 @@ package address
 import (
 	"classplanner/internal/model"
 	"classplanner/internal/service"
+	"context"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,13 +18,13 @@ func NewAddressHandler(s *service.AddressService) *AddressHandler {
 }
 
 // Obtener direcciones de un usuario
-func (h *AddressHandler) GetByUserID(c *fiber.Ctx) error {
+func (h *AddressHandler) GetByUserID(ctx context.Context, c *fiber.Ctx) error {
 	userID, err := strconv.Atoi(c.Params("user_id"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID de usuario inválido"})
 	}
 
-	addresses, err := h.service.GetByUserID(userID)
+	addresses, err := h.service.GetByUserID(ctx, userID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -32,13 +33,13 @@ func (h *AddressHandler) GetByUserID(c *fiber.Ctx) error {
 }
 
 // Crear dirección
-func (h *AddressHandler) Create(c *fiber.Ctx) error {
+func (h *AddressHandler) Create(ctx context.Context, c *fiber.Ctx) error {
 	address := new(model.Address)
 	if err := c.BodyParser(address); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	newAddress, err := h.service.CreateAddress(address)
+	newAddress, err := h.service.CreateAddress(ctx, address)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -47,7 +48,7 @@ func (h *AddressHandler) Create(c *fiber.Ctx) error {
 }
 
 // Actualizar dirección
-func (h *AddressHandler) Update(c *fiber.Ctx) error {
+func (h *AddressHandler) Update(ctx context.Context, c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID inválido"})
@@ -58,7 +59,7 @@ func (h *AddressHandler) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	updated, err := h.service.UpdateAddress(id, address)
+	updated, err := h.service.UpdateAddress(ctx, id, address)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -67,13 +68,13 @@ func (h *AddressHandler) Update(c *fiber.Ctx) error {
 }
 
 // Eliminar dirección
-func (h *AddressHandler) Delete(c *fiber.Ctx) error {
+func (h *AddressHandler) Delete(ctx context.Context, c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID inválido"})
 	}
 
-	if err := h.service.DeleteAddress(id); err != nil {
+	if err := h.service.DeleteAddress(ctx, id); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
