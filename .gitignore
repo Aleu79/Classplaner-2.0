@@ -2,7 +2,7 @@
 vendor/
 logs/**
 go.sum
-
+migrations/
 
 #credentials
 .env
