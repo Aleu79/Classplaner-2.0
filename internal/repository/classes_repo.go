@@ -11,7 +11,8 @@ import (
 )
 
 type ClassesRepository interface {
-	CreateClass(ctx context.Context, class *model.Classes) error
+	CreateClass(ctx context.Context, class *model.Classes) (*model.Classes, error)
+	Exists(ctx context.Context, classID int) (bool, error)
 	ClassesByTeacher(ctx context.Context, teacherID int) ([]*model.Classes, error)
 	ClassesByStudent(ctx context.Context, studentID int) ([]*model.Classes, error)
 	JoinClass(ctx context.Context, userID int, token string) error
@@ -30,22 +31,49 @@ func NewClassesRepository(db *sql.DB) ClassesRepository {
 	}
 }
 
-// Crear clase
-func (r *ClassesSQL) CreateClass(ctx context.Context, class *model.Classes) error {
+// Crear clase1
+func (r *ClassesSQL) CreateClass(ctx context.Context, class *model.Classes) (*model.Classes, error) {
 	query, args, err := r.sb.
 		Insert("classes").
 		Columns("class_name", "class_profesor", "class_curso", "class_color", "class_token").
 		Values(class.Name, class.Profesor, class.Curso, class.Color, class.Token).
+		Suffix("RETURNING id_class").
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("CreateClass build query error: %w", err)
+		return nil, fmt.Errorf("CreateClass build query error: %w", err)
 	}
 
-	_, err = r.db.ExecContext(ctx, query, args...)
+	var id int
+	err = r.db.QueryRowContext(ctx, query, args...).Scan(&id)
 	if err != nil {
-		return fmt.Errorf("CreateClass execution error: %w", err)
+		return nil, fmt.Errorf("CreateClass execution error: %w", err)
 	}
-	return nil
+
+	class.ID = id
+	return class, nil
+}
+
+func (r *ClassesSQL) Exists(ctx context.Context, classID int) (bool, error) {
+	query, args, err := r.sb.
+		Select("1").
+		From("classes").
+		Where(sq.Eq{"id_class": classID}).
+		Limit(1).
+		ToSql()
+	if err != nil {
+		return false, fmt.Errorf("Exists build query error: %w", err)
+	}
+
+	var exists int
+	err = r.db.QueryRowContext(ctx, query, args...).Scan(&exists)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("Exists query error: %w", err)
+	}
+
+	return true, nil
 }
 
 // Clases por profesor
