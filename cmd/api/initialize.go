@@ -37,9 +37,16 @@ func Initialize() *AppDependencies {
 
 	dbInstance := database.Connect()
 
+	// Initialize logger
+	logFile := "./logs/app.log"
+	l, err := logger.NewLogger(logFile, zap.DebugLevel)
+	if err != nil {
+		log.Fatalf("no se pudo inicializar logger: %v", err)
+	}
+
 	// Register middlewares
 	app.Use(middleware.MiddleCsrf())
-	app.Use(middleware.LoggerStarter())
+	app.Use(middleware.LoggerStarter("./logs/http.log", l))
 	app.Use(middleware.HealthCheck())
 
 	// Serve static files
@@ -51,17 +58,10 @@ func Initialize() *AppDependencies {
 		MaxAge:        36000,
 	})
 
-	// Initialize logger
-	logFile := "./logs/app.log"
-	l, err := logger.NewLogger(logFile, zap.DebugLevel)
-	if err != nil {
-		log.Fatalf("no se pudo inicializar logger: %v", err)
-	}
-
 	// Initialize repositories and services
 	userRepo := repository.NewUserRepository(dbInstance.DB)
 	userService := service.NewUserService(userRepo, l)
-	userHandler := users.NewUserHandler(userService)
+	userHandler := users.NewUserHandler(userService, l)
 
 	ctx := context.Background()
 	l.Info(logger.EnsureContext(ctx), "Aplicación iniciada")
