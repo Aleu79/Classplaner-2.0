@@ -35,7 +35,7 @@ func (s *AddressService) CreateAddress(ctx context.Context, address *model.Addre
 // Actualizar dirección existente
 func (s *AddressService) UpdateAddress(ctx context.Context, id int, address *model.Address) (*model.Address, error) {
 
-	existing, err := s.repo.GetByUserID(ctx, address.UserID)
+	existing, err := s.repo.GetByUserID(ctx, address.User_ID)
 	if err != nil {
 		return nil, err
 	}

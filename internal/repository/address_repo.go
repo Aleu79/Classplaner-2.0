@@ -52,7 +52,7 @@ func (r *AddressSQL) GetByUserID(ctx context.Context, userID int) ([]*model.Addr
 	for rows.Next() {
 		a := &model.Address{}
 		if err := rows.Scan(
-			&a.ID, &a.UserID, &a.Name, &a.IsPrimary, &a.CityID, &a.ProvinceID,
+			&a.ID, &a.Name, &a.IsPrimary, &a.CityID, &a.ProvinceID,
 			&a.Address1, &a.Address2, &a.Phone, &a.Email, &a.PostCode,
 			&a.CreatedAt, &a.UpdatedAt, &a.DeletedAt,
 		); err != nil {
@@ -73,7 +73,7 @@ func (r *AddressSQL) CreateAddress(ctx context.Context, address *model.Address) 
 			"address1", "address2", "phone", "email", "post_code", "created_at", "updated_at",
 		).
 		Values(
-			address.UserID, address.Name, address.IsPrimary, address.CityID, address.ProvinceID,
+			address.User_ID, address.Name, address.IsPrimary, address.CityID, address.ProvinceID,
 			address.Address1, address.Address2, address.Phone, address.Email, address.PostCode,
 			sq.Expr("NOW()"), sq.Expr("NOW()"),
 		).

@@ -65,7 +65,7 @@ func (r *CalendarSQL) CalendarByUser(ctx context.Context, userID int, userType s
 		c := &model.Calendar{}
 		var created, deliver time.Time
 
-		if err := rows.Scan(&c.Title, &c.Desc, &c.IDtask, &created, &deliver, &c.ClassName, &c.Curso); err != nil {
+		if err := rows.Scan(&c.Title, &c.Desc, &c.ID_task, &created, &deliver, &c.ClassName, &c.Curso); err != nil {
 			return nil, fmt.Errorf("CalendarByUser scan error: %w", err)
 		}
 
@@ -121,7 +121,7 @@ func (r *CalendarSQL) CalendarByUserAndToken(ctx context.Context, userID int, us
 		c := &model.Calendar{}
 		var created, deliver time.Time
 
-		if err := rows.Scan(&c.Title, &c.Desc, &c.IDtask, &created, &deliver, &c.ClassName, &c.Curso); err != nil {
+		if err := rows.Scan(&c.Title, &c.Desc, &c.ID_task, &created, &deliver, &c.ClassName, &c.Curso); err != nil {
 			continue
 		}
 
