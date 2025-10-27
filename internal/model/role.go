@@ -3,7 +3,7 @@ package model
 import "time"
 
 type Role struct {
-	ID          int       `json:"id"`
+	ID          int       `json:"id" sql:"primary_key;auto_increment"`
 	Name        string    `json:"name" binding:"required" sql:"type:VARCHAR(250)"`
 	Description string    `json:"description,omitempty" sql:"type:VARCHAR(250)"`
 	CreatedAt   time.Time `json:"created_at"`

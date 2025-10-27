@@ -4,13 +4,13 @@ type Submission struct {
 	ID           int    `json:"id_submission" form:"id_submission"`
 	ID_user      int    `json:"id_user" form:"id_user"`
 	ID_task      int    `json:"id_task" form:"id_task"`
-	File         string `json:"submission_file" form:"submission_file"`
-	Comment      string `json:"submission_comment" form:"submission_comment"`
-	Date         string `json:"submission_date" form:"submission_date"`
-	Calification string `json:"calification" form:"calification"`
-	Feedback     string `json:"feedback" form:"feedback"`
-	Username     string `json:"user_name"`
-	Lastname     string `json:"user_lastname"`
-	Alias        string `json:"user_alias"`
-	Photo        string `json:"user_photo"`
+	File         string `json:"submission_file" form:"submission_file" sql:"type:VARCHAR(500)"`
+	Comment      string `json:"submission_comment" form:"submission_comment" sql:"type:VARCHAR(500)"`
+	Date         string `json:"submission_date" form:"submission_date" sql:"type:timestamp"`
+	Calification string `json:"calification" form:"calification" sql:"type:FLOAT"`
+	Feedback     string `json:"feedback" form:"feedback" sql:"type:VARCHAR(500)"`
+	Username     string `json:"user_name" sql:"type:VARCHAR(100)"`
+	Lastname     string `json:"user_lastname" sql:"type:VARCHAR(100)"`
+	Alias        string `json:"user_alias" sql:"type:VARCHAR(100)"`
+	Photo        string `json:"user_photo" sql:"type:VARCHAR(500)"`
 }
