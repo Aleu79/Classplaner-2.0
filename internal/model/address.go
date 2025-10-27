@@ -4,7 +4,7 @@ import "time"
 
 type Address struct {
 	ID         int       `json:"id" sql:"primary_key;auto_increment"`
-	UserID     int       `json:"user_id" binding:"required"`
+	User_ID    int       `json:"user_id" binding:"required" sql:"foreign_key:id;references:id"`
 	Name       string    `json:"name,omitempty" sql:"type:VARCHAR(250)"`
 	IsPrimary  bool      `json:"is_primary"`
 	CityID     int       `json:"city_id,omitempty"`

@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/sunary/sqlize"
 )
@@ -129,15 +130,20 @@ func Reset() {
 	db := database.Connect().DB
 
 	// Get the DOWN SQL string to revert changes
-	migrationDownSQL := sqlz.StringDown()
+	migrationDownSQL := splitInLines(sqlz.StringDown()) //split in lines
 	fmt.Println("Executing DOWN migration SQL:\n", migrationDownSQL)
 
 	log.Println("executing migration down...")
-	if _, err := db.Exec(migrationDownSQL); err != nil {
-		log.Fatalf("pgsql DatabaseDown: %v", err)
+	for i := 0; i < len(migrationDownSQL); i++ {
+		if _, err := db.Exec(migrationDownSQL[i]); err != nil {
+			log.Fatalf("pgsql DatabaseDown: %v", err)
+		}
 	}
-
 	// Reset the version record after successful revert
 	writeMigrationVersion(sqlz, os.Getenv("MIGRATIONS_VERSION"), 0)
 	log.Println("database successfully reset")
+}
+
+func splitInLines(sql string) []string {
+	return strings.Split(sql, "\n")
 }
