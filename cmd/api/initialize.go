@@ -1,10 +1,13 @@
 package api
 
 import (
+	"context"
+	"log"
 	"os"
 	"time"
 
 	"classplanner/internal/infrastructure/database"
+	"classplanner/internal/infrastructure/logger"
 	"classplanner/internal/middleware"
 	"classplanner/internal/repository"
 	"classplanner/internal/service"
@@ -12,6 +15,7 @@ import (
 	"classplanner/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 // AppDependencies holds all the dependencies to be injected into the handlers
@@ -19,24 +23,30 @@ type AppDependencies struct {
 	UserHandler *users.UserHandler
 	DB          *database.DatabaseInstance
 	App         *fiber.App
+	Logger      *logger.Logger
 }
 
 // Initialize loads configuration, middlewares, database, repositories, and services
 func Initialize() *AppDependencies {
 	utils.LoadEnv()
 
-	// Create a new Fiber app
 	app := fiber.New(fiber.Config{
 		ServerHeader: os.Getenv("SERVER_HEADER"),
 		AppName:      os.Getenv("APP_NAME"),
 	})
 
-	// Connect to the database
 	dbInstance := database.Connect()
+
+	// Initialize logger
+	logFile := "./logs/app.log"
+	l, err := logger.NewLogger(logFile, zap.DebugLevel)
+	if err != nil {
+		log.Fatalf("no se pudo inicializar logger: %v", err)
+	}
 
 	// Register middlewares
 	app.Use(middleware.MiddleCsrf())
-	app.Use(middleware.LoggerStarter())
+	app.Use(middleware.LoggerStarter("./logs/http.log", l))
 	app.Use(middleware.HealthCheck())
 	app.Use(middleware.MiddleHelmet())
 
@@ -51,12 +61,16 @@ func Initialize() *AppDependencies {
 
 	// Initialize repositories and services
 	userRepo := repository.NewUserRepository(dbInstance.DB)
-	userService := service.NewUserService(userRepo)
-	userHandler := users.NewUserHandler(userService)
+	userService := service.NewUserService(userRepo, l)
+	userHandler := users.NewUserHandler(userService, l)
+
+	ctx := context.Background()
+	l.Info(logger.EnsureContext(ctx), "Aplicación iniciada")
 
 	return &AppDependencies{
 		UserHandler: userHandler,
 		DB:          dbInstance,
 		App:         app,
+		Logger:      l,
 	}
 }
