@@ -1,5 +1,13 @@
 package model
 
+type TaskState string
+
+const (
+	StatePending   TaskState = "pendiente"
+	StateSubmitted TaskState = "entregada"
+	StateLate      TaskState = "atrasada"
+)
+
 type Tasks struct {
 	ID          int     `json:"id_task" sql:"primary_key;auto_increment"`
 	Clase       Classes `json:"id_class" sql:"foreign_key:id;references:id"`

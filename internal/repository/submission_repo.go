@@ -15,6 +15,9 @@ type SubmissionRepository interface {
 	GetByUserAndTask(ctx context.Context, userID, taskID int64) (*model.Submission, error)
 	GetByTask(ctx context.Context, taskID int64, limit, offset uint64) ([]*model.Submission, error)
 	Update(ctx context.Context, s *model.Submission) error
+	GetByTaskAndDate(ctx context.Context, taskID int64, from, to time.Time) ([]*model.Submission, error)
+	GetLastSubmissionsByUser(ctx context.Context, userID int64, limit int) ([]*model.Submission, error)
+	CountByTask(ctx context.Context, taskID int64) (int64, error)
 }
 
 type SubmissionSQL struct {
@@ -156,4 +159,123 @@ func (r *SubmissionSQL) Update(ctx context.Context, s *model.Submission) error {
 		return fmt.Errorf("error actualizando submission: %w", err)
 	}
 	return nil
+}
+
+// Obtener entregas de una tarea dentro de un rango de fechas
+func (r *SubmissionSQL) GetByTaskAndDate(ctx context.Context, taskID int64, from, to time.Time) ([]*model.Submission, error) {
+	builder := r.sb.
+		Select("s.id_submission", "s.id_user", "s.id_task", "s.submission_file", "s.submission_comment", "s.submission_date", "s.calification", "s.feedback", "u.user_name", "u.user_lastname", "u.user_alias", "u.user_photo").
+		From("submissions s").
+		Join("users u ON s.id_user = u.id_user").
+		Where(sq.Eq{"s.id_task": taskID}).
+		Where(sq.And{
+			sq.GtOrEq{"s.submission_date": from},
+			sq.LtOrEq{"s.submission_date": to},
+		}).
+		OrderBy("s.submission_date DESC")
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("error construyendo query: %w", err)
+	}
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("error ejecutando query: %w", err)
+	}
+	defer rows.Close()
+
+	var subs []*model.Submission
+	for rows.Next() {
+		var s model.Submission
+		var date []byte
+		if err := rows.Scan(
+			&s.ID,
+			&s.ID_user,
+			&s.ID_task,
+			&s.File,
+			&s.Comment,
+			&date,
+			&s.Calification,
+			&s.Feedback,
+			&s.Username,
+			&s.Lastname,
+			&s.Alias,
+			&s.Photo,
+		); err != nil {
+			return nil, fmt.Errorf("error escaneando fila: %w", err)
+		}
+		s.Date = string(date)
+		subs = append(subs, &s)
+	}
+
+	return subs, nil
+}
+
+// Obtener últimas N entregas de un usuario
+func (r *SubmissionSQL) GetLastSubmissionsByUser(ctx context.Context, userID int64, limit int) ([]*model.Submission, error) {
+	builder := r.sb.
+		Select("s.id_submission", "s.id_user", "s.id_task", "s.submission_file", "s.submission_comment", "s.submission_date", "s.calification", "s.feedback", "u.user_name", "u.user_lastname", "u.user_alias", "u.user_photo").
+		From("submissions s").
+		Join("users u ON s.id_user = u.id_user").
+		Where(sq.Eq{"s.id_user": userID}).
+		OrderBy("s.submission_date DESC").
+		Limit(uint64(limit))
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("error construyendo query: %w", err)
+	}
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("error ejecutando query: %w", err)
+	}
+	defer rows.Close()
+
+	var subs []*model.Submission
+	for rows.Next() {
+		var s model.Submission
+		var date []byte
+		if err := rows.Scan(
+			&s.ID,
+			&s.ID_user,
+			&s.ID_task,
+			&s.File,
+			&s.Comment,
+			&date,
+			&s.Calification,
+			&s.Feedback,
+			&s.Username,
+			&s.Lastname,
+			&s.Alias,
+			&s.Photo,
+		); err != nil {
+			return nil, fmt.Errorf("error escaneando fila: %w", err)
+		}
+		s.Date = string(date)
+		subs = append(subs, &s)
+	}
+
+	return subs, nil
+}
+
+// Contar entregas de una tarea
+func (r *SubmissionSQL) CountByTask(ctx context.Context, taskID int64) (int64, error) {
+	query, args, err := r.sb.
+		Select("COUNT(*)").
+		From("submissions").
+		Where(sq.Eq{"id_task": taskID}).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("error construyendo query: %w", err)
+	}
+
+	var count int64
+	err = r.db.QueryRowContext(ctx, query, args...).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("error ejecutando query: %w", err)
+	}
+
+	return count, nil
 }
