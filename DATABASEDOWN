@@ -1,0 +1,17 @@
+DROP TABLE IF EXISTS "user";
+
+DROP TABLE IF EXISTS "role";
+
+DROP TABLE IF EXISTS "calendar";
+
+DROP TABLE IF EXISTS "classes";
+
+DROP TABLE IF EXISTS "comment";
+
+DROP TABLE IF EXISTS "submission";
+
+DROP TABLE IF EXISTS "tasks";
+
+DROP TABLE IF EXISTS "user_class";
+
+DROP TABLE IF EXISTS "address";
