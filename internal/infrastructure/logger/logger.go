@@ -109,6 +109,17 @@ func (l *Logger) Error(ctx context.Context, msg string, args ...any) {
 	l.runHooks(zapcore.ErrorLevel, msg, fields)
 }
 
+func (l *Logger) ErrorFields(ctx context.Context, msg string, fields ...zap.Field) {
+	base := getFieldsFromCtx(ctx)
+	zapFields := make([]zap.Field, 0, len(base)+len(fields))
+	for k, v := range base {
+		zapFields = append(zapFields, zap.Any(k, v))
+	}
+	zapFields = append(zapFields, fields...)
+	l.sugar.Desugar().Error(msg, zapFields...)
+	l.runHooks(zapcore.ErrorLevel, msg, base)
+}
+
 // Devuelve un contexto válido si el recibido es nil
 func EnsureContext(ctx context.Context) context.Context {
 	if ctx == nil {

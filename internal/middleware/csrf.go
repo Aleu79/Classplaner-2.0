@@ -63,7 +63,7 @@ func CsrfErrorHandler(l *logger.Logger) fiber.ErrorHandler {
 		ctx := c.Context()
 
 		// Log del error CSRF
-		l.Error(ctx, "CSRF validation failed",
+		l.ErrorFields(ctx, "CSRF validation failed",
 			zap.String("path", c.Path()),
 			zap.String("method", c.Method()),
 			zap.String("ip", c.IP()),

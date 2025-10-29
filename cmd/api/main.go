@@ -1,6 +1,10 @@
 package api
 
-import "classplanner/cmd/routes"
+import (
+	"classplanner/cmd/routes"
+	"log"
+	"os"
+)
 
 // En Microservice() después de Initialize()
 func Microservice() {
@@ -15,6 +19,16 @@ func Microservice() {
 	// routes.RegisterCalendarRoutes(deps.App, deps.CalendarHandler)
 	// routes.RegisterPremiumRoutes(deps.App, deps.PremiumHandler)
 
+	// Leer puerto desde variable de entorno o usar por defecto
+	port := os.Getenv("APP_PORT")
+	if port == "" {
+		port = "3000"
+	}
+
+	log.Printf("Servidor Classplanner corriendo en http://localhost:%s", port)
+
 	// Start server
-	deps.App.Listen(":3000")
+	if err := deps.App.Listen(":" + port); err != nil {
+		log.Fatalf("Error iniciando servidor: %v", err)
+	}
 }
