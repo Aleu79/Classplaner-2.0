@@ -10,6 +10,7 @@ type User struct {
 	FirstName string    `json:"first_name" binding:"required" sql:"type:VARCHAR(100)"`
 	LastName  string    `json:"last_name" binding:"required" sql:"type:VARCHAR(100)"`
 	Email     string    `json:"email" binding:"required,email" sql:"type:VARCHAR(250)"`
+	Phone     string    `json:"phone" binding:"required,phone" sql:"type:VARCHAR(250)"`
 	Password  string    `json:"password,omitempty" binding:"required"  sql:"type:VARCHAR(500)"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
