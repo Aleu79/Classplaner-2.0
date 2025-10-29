@@ -72,7 +72,7 @@ func LoggerStarter(logPath string, l *logger.Logger) fiber.Handler {
 		path := c.Path()
 
 		// Construir log legible
-		logLine := fmt.Sprintf("[%s] %s %s status=%d latency=%s ip=%s",
+		logLine := fmt.Sprintf("[%s],%s,%s,status=%d,latency=%s,ip=%s",
 			time.Now().Format("2006-01-02 15:04:05"),
 			method, path,
 			status,

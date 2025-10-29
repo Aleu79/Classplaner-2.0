@@ -12,7 +12,6 @@ import (
 	"classplanner/internal/repository"
 	"classplanner/internal/service"
 	"classplanner/internal/transport/users"
-	"classplanner/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
@@ -28,8 +27,6 @@ type AppDependencies struct {
 
 // Initialize loads configuration, middlewares, database, repositories, and services
 func Initialize() *AppDependencies {
-	utils.LoadEnv()
-
 	app := fiber.New(fiber.Config{
 		ServerHeader: os.Getenv("SERVER_HEADER"),
 		AppName:      os.Getenv("APP_NAME"),
@@ -38,17 +35,19 @@ func Initialize() *AppDependencies {
 	dbInstance := database.Connect()
 
 	// Initialize logger
-	logFile := "./logs/app.log"
+	logFile := os.Getenv("LOGGER_PATH")
+	mwLogFile := os.Getenv("MW_LOGGER_PATH")
 	l, err := logger.NewLogger(logFile, zap.DebugLevel)
 	if err != nil {
 		log.Fatalf("no se pudo inicializar logger: %v", err)
 	}
 
 	// Register middlewares
-	app.Use(middleware.MiddleCsrf())
-	app.Use(middleware.LoggerStarter("./logs/http.log", l))
+	app.Use(middleware.MiddleCors()) // cors should be always in top
+	app.Use(middleware.LoggerStarter(mwLogFile, l))
 	app.Use(middleware.HealthCheck())
 	app.Use(middleware.MiddleHelmet())
+	app.Use(middleware.MiddleCsrf(l))
 
 	// Serve static files
 	app.Static(os.Getenv("UPLOADS_URL"), os.Getenv("UPLOADS_PATH"), fiber.Static{

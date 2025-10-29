@@ -6,7 +6,7 @@ type User struct {
 	ID        int       `json:"id" sql:"primary_key;auto_increment"`
 	Username  string    `json:"username" binding:"required" sql:"type:VARCHAR(100)"`
 	RoleID    int       `json:"role_id" binding:"required"`
-	Role      Role      `json:"role,omitempty" sql:"foreign_key:id;references:id"`
+	Role      string    `json:"role,omitempty" sql:"foreign_key:id;references:id"`
 	FirstName string    `json:"first_name" binding:"required" sql:"type:VARCHAR(100)"`
 	LastName  string    `json:"last_name" binding:"required" sql:"type:VARCHAR(100)"`
 	Email     string    `json:"email" binding:"required,email" sql:"type:VARCHAR(250)"`

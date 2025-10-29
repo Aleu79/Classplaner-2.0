@@ -3,7 +3,7 @@ package model
 type Classes struct {
 	ID       int    `json:"id_class" sql:"primary_key;auto_increment"`
 	Name     string `json:"class_name" sql:"type:VARCHAR(100)"`
-	Profesor int16  `json:"class_profesor" sql:"type:VARCHAR(100)"` //forange
+	Profesor int    `json:"class_profesor" sql:"type:VARCHAR(100)"`
 	Curso    string `json:"class_curso" sql:"type:VARCHAR(100)"`
 	Color    string `json:"class_color" sql:"type:VARCHAR(100)"`
 	Token    string `json:"class_token" sql:"type:VARCHAR(100)"`

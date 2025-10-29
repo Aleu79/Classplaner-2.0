@@ -3,6 +3,7 @@ package main
 import (
 	"classplanner/cmd/api"
 	"classplanner/cmd/database"
+	"classplanner/pkg/utils"
 	"context"
 	"log"
 	"os"
@@ -11,6 +12,11 @@ import (
 )
 
 func main() {
+	// load env variables once
+	// avoiding repeting them in other files
+	utils.LoadEnv()
+
+	// cli operations
 	cmd := &cli.Command{
 		Name:  "classplanner/v2",
 		Usage: "Managing database & security connections from this microservice!",
