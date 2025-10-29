@@ -10,6 +10,8 @@ DROP VIEW IF EXISTS vw_user_ranking;
 DROP VIEW IF EXISTS vw_dashboard_classes;
 DROP VIEW IF EXISTS vw_user_timeline;
 DROP VIEW IF EXISTS vw_class_submissions_stats;
+DROP VIEW IF EXISTS vw_dashboard_students;
+DROP VIEW IF EXISTS vw_dashboard_admin;
 
 DROP TABLE IF EXISTS address CASCADE;
 DROP TABLE IF EXISTS user_class CASCADE;
@@ -366,3 +368,52 @@ JOIN "user" u ON u.id = uc.user_id
 LEFT JOIN submission s ON s.id_task = t.id AND s.id_user = u.id
 GROUP BY c.id, c.name
 ORDER BY c.name;
+
+-- 10. Dashboard para el admin
+-- Total de usuarios, total de clases, total de tarea, total de entrega, 
+-- promedio general de calificacione (global + por fecha)
+CREATE OR REPLACE VIEW vw_dashboard_admin AS
+SELECT
+    (SELECT COUNT(*) FROM "user") AS total_users,
+    (SELECT COUNT(*) FROM classes) AS total_classes,
+    (SELECT COUNT(*) FROM tasks) AS total_tasks,
+    (SELECT COUNT(*) FROM submission) AS total_submissions,
+    ROUND((SELECT AVG(calification)::NUMERIC 
+           FROM submission 
+           WHERE calification IS NOT NULL), 2) AS avg_grade,
+    (SELECT COUNT(*) FROM comment) AS total_comments;
+
+-- 11. Dashboard de alumnos
+-- Muestra el progreso de cada alumno dentro de sus clases:
+-- total de tareas, entregas realizadas, promedio de notas, y estado general.
+CREATE OR REPLACE VIEW vw_dashboard_students AS
+SELECT
+    u.id AS user_id,
+    u.username,
+    u.first_name,
+    u.last_name,
+    c.id AS class_id,
+    c.name AS class_name,
+    COUNT(DISTINCT t.id) AS total_tasks,
+    COUNT(DISTINCT s.id) AS total_submissions,
+    ROUND(AVG(s.calification) FILTER (WHERE s.calification IS NOT NULL)::NUMERIC, 2) AS avg_grade,
+    COUNT(DISTINCT s.id) FILTER (WHERE t.estado = 'pendiente') AS pending_tasks,
+    COUNT(DISTINCT s.id) FILTER (WHERE t.estado = 'entregada') AS submitted_tasks,
+    COUNT(DISTINCT s.id) FILTER (WHERE t.estado = 'atrasada') AS late_tasks,
+    -- Porcentaje de progreso basado en tareas entregadas vs totales
+    ROUND(
+        CASE 
+            WHEN COUNT(DISTINCT t.id) = 0 THEN 0
+            ELSE (COUNT(DISTINCT s.id)::DECIMAL / COUNT(DISTINCT t.id)::DECIMAL) * 100
+        END, 2
+    ) AS progress_percent,
+    -- Última entrega
+    MAX(s.date) AS last_submission_date
+FROM "user" u
+JOIN user_class uc ON uc.user_id = u.id
+JOIN classes c ON c.id = uc.class_id
+LEFT JOIN tasks t ON t.class_id = c.id
+LEFT JOIN submission s ON s.id_task = t.id AND s.id_user = u.id
+WHERE uc.role = 'student'
+GROUP BY u.id, u.username, u.first_name, u.last_name, c.id, c.name
+ORDER BY u.id, c.name;
