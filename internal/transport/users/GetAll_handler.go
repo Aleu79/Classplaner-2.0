@@ -1,40 +1,23 @@
 package users
 
 import (
-	"context"
-
-	"classplanner/internal/infrastructure/logger"
+	"classplanner/pkg/response"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-// Obtener todos los usuarios
+// GetAll obtiene todos los usuarios
 func (h *UserHandler) GetAll(c *fiber.Ctx) error {
-	ctx := context.Background()
+	ctx := h.GetCtx(c)
 
-	// Inyectar requestID si existe
-	if reqID := c.Locals("requestid"); reqID != nil {
-		if rid, ok := reqID.(string); ok {
-			ctx = logger.WithReqID(ctx, rid)
-		}
-	}
-
-	// Inyectar userID si existe
-	if uid := c.Locals("userID"); uid != nil {
-		if id, ok := uid.(int); ok {
-			ctx = logger.WithUserID(ctx, id)
-		}
-	}
-
-	// Log de entrada
 	h.logger.Info(ctx, "GetAll usuarios request recibido")
 
 	users, err := h.service.GetAll(ctx)
 	if err != nil {
 		h.logger.Error(ctx, "Error obteniendo usuarios: %v", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return response.InternalError(c, "Error obteniendo usuarios", err.Error())
 	}
 
 	h.logger.Info(ctx, "Usuarios obtenidos exitosamente")
-	return c.JSON(users)
+	return response.Success(c, "Usuarios obtenidos correctamente", users)
 }

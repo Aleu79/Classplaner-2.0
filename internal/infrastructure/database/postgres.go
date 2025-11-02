@@ -1,6 +1,7 @@
 package database
 
 import (
+	"classplanner/internal/infrastructure/logger"
 	"classplanner/internal/repository"
 	"classplanner/pkg/utils"
 	"database/sql"
@@ -9,6 +10,7 @@ import (
 	"os"
 
 	_ "github.com/lib/pq" // Import pq for PostgreSQL driver
+	"go.uber.org/zap/zapcore"
 )
 
 type DatabaseInstance struct {
@@ -41,8 +43,15 @@ func Connect() *DatabaseInstance {
 		log.Fatalf("Database unreachable: %v", err)
 	}
 
-	DBInstance = &DatabaseInstance{DB: db}
-	DBInstance.Repository = repository.New(db)
+	logg, err := logger.NewLogger("app.log", zapcore.InfoLevel)
+	if err != nil {
+		log.Fatalf("Error creando logger: %v", err)
+	}
+
+	DBInstance = &DatabaseInstance{
+		DB:         db,
+		Repository: repository.New(db, logg),
+	}
 
 	log.Println("✅ Database connected successfully")
 

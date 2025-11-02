@@ -4,6 +4,7 @@ import (
 	"classplanner/internal/infrastructure/logger"
 	"classplanner/internal/model"
 	"classplanner/internal/service"
+	"classplanner/pkg/response"
 	"context"
 	"strconv"
 
@@ -15,7 +16,6 @@ type UserHandler struct {
 	logger  *logger.Logger
 }
 
-// Ahora el constructor recibe logger también
 func NewUserHandler(s *service.UserService, l *logger.Logger) *UserHandler {
 	return &UserHandler{
 		service: s,
@@ -23,7 +23,6 @@ func NewUserHandler(s *service.UserService, l *logger.Logger) *UserHandler {
 	}
 }
 
-// Helper para crear contexto con requestID y userID
 func (h *UserHandler) GetCtx(c *fiber.Ctx) context.Context {
 	ctx := context.Background()
 	if reqID := c.Locals("requestid"); reqID != nil {
@@ -39,24 +38,24 @@ func (h *UserHandler) GetCtx(c *fiber.Ctx) context.Context {
 	return ctx
 }
 
-// Registro
+// Register
 func (h *UserHandler) Register(c *fiber.Ctx) error {
 	ctx := h.GetCtx(c)
 
 	u := new(model.User)
 	if err := c.BodyParser(u); err != nil {
-		h.logger.Warn(ctx, "BodyParser error: %v", err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		h.logger.Warn(ctx, "Error parsing body: %v", err)
+		return response.BadRequest(c, "Invalid request body", err.Error())
 	}
 
 	user, err := h.service.Register(ctx, u)
 	if err != nil {
-		h.logger.Error(ctx, "Error registrando usuario: %v", err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		h.logger.Error(ctx, "Error registering user: %v", err)
+		return response.BadRequest(c, "No se pudo registrar el usuario", err.Error())
 	}
 
-	h.logger.Info(ctx, "Usuario registrado ID=%d", user.ID)
-	return c.Status(fiber.StatusCreated).JSON(user)
+	h.logger.Info(ctx, "User registered ID=%d", user.ID)
+	return response.Created(c, "Usuario registrado correctamente", user)
 }
 
 // Login
@@ -69,76 +68,75 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 	}{}
 
 	if err := c.BodyParser(&req); err != nil {
-		h.logger.Warn(ctx, "BodyParser error login: %v", err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		h.logger.Warn(ctx, "Error parsing login body: %v", err)
+		return response.BadRequest(c, "Invalid request body", err.Error())
 	}
 
 	user, err := h.service.Login(ctx, req.UserOrEmail, req.Password)
 	if err != nil {
-		h.logger.Warn(ctx, "Login fallido: %v", err)
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
+		h.logger.Warn(ctx, "Login failed: %v", err)
+		return response.Unauthorized(c, "Usuario o contraseña incorrectos")
 	}
 
-	h.logger.Info(ctx, "Login exitoso ID=%d", user.ID)
-	return c.JSON(user)
+	h.logger.Info(ctx, "Login successful ID=%d", user.ID)
+	return response.Success(c, "Login exitoso", user)
 }
 
 // Logout
 func (h *UserHandler) Logout(c *fiber.Ctx) error {
 	ctx := h.GetCtx(c)
 
-	err := h.service.Logout(ctx, nil)
-	if err != nil {
-		h.logger.Error(ctx, "Error en logout: %v", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	if err := h.service.Logout(ctx, nil); err != nil {
+		h.logger.Error(ctx, "Logout error: %v", err)
+		return response.InternalError(c, "Error en logout", err.Error())
 	}
 
-	h.logger.Info(ctx, "Logout exitoso")
-	return c.JSON(fiber.Map{"message": "logout exitoso"})
+	h.logger.Info(ctx, "Logout successful")
+	return response.Success(c, "Logout exitoso", nil)
 }
 
-// Actualizar usuario
+// Update
 func (h *UserHandler) Update(c *fiber.Ctx) error {
 	ctx := h.GetCtx(c)
 
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		h.logger.Warn(ctx, "ID inválido: %v", err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID inválido"})
+		h.logger.Warn(ctx, "Invalid ID: %v", err)
+		return response.BadRequest(c, "ID inválido", err.Error())
 	}
 
 	u := new(model.User)
 	if err := c.BodyParser(u); err != nil {
-		h.logger.Warn(ctx, "BodyParser error update: %v", err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		h.logger.Warn(ctx, "Error parsing body for update: %v", err)
+		return response.BadRequest(c, "Invalid request body", err.Error())
 	}
 
 	updatedUser, err := h.service.Update(ctx, id, u)
 	if err != nil {
-		h.logger.Error(ctx, "Error actualizando usuario ID=%d: %v", id, err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		h.logger.Error(ctx, "Error updating user ID=%d: %v", id, err)
+		return response.BadRequest(c, "No se pudo actualizar el usuario", err.Error())
 	}
 
-	h.logger.Info(ctx, "Usuario actualizado ID=%d", id)
-	return c.JSON(updatedUser)
+	h.logger.Info(ctx, "User updated ID=%d", id)
+	return response.Success(c, "Usuario actualizado correctamente", updatedUser)
 }
 
-// Verificar si un usuario existe
+// Exists
 func (h *UserHandler) Exists(c *fiber.Ctx) error {
 	ctx := h.GetCtx(c)
 
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		h.logger.Warn(ctx, "ID inválido exists: %v", err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ID inválido"})
+		h.logger.Warn(ctx, "Invalid ID for exists: %v", err)
+		return response.BadRequest(c, "ID inválido", err.Error())
 	}
 
 	exists, err := h.service.Exists(ctx, id)
 	if err != nil {
 		h.logger.Error(ctx, "Error checking exists ID=%d: %v", id, err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return response.InternalError(c, "Error verificando existencia de usuario", err.Error())
 	}
 
-	h.logger.Info(ctx, "Exists ID=%d: %v", id, exists)
-	return c.JSON(fiber.Map{"exists": exists})
+	h.logger.Info(ctx, "Exists check ID=%d: %v", id, exists)
+	return response.Success(c, "Verificación de existencia exitosa", fiber.Map{"exists": exists})
 }

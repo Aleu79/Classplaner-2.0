@@ -2,6 +2,7 @@ package api
 
 import (
 	"classplanner/cmd/routes"
+	"classplanner/internal/middleware"
 	"log"
 	"os"
 )
@@ -9,6 +10,10 @@ import (
 // En Microservice() después de Initialize()
 func Microservice() {
 	deps := Initialize() // Load DB, handlers, app
+
+	// Middleware catch-all para rutas no encontradas
+	deps.App.Use(middleware.CathAll(deps.Logger))
+	middleware.PrintRoutes(deps.App)
 
 	// Register all routes by module
 	routes.RegisterUserRoutes(deps.App, deps.UserHandler)

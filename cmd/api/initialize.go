@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -42,6 +43,11 @@ func Initialize() *AppDependencies {
 		log.Fatalf("no se pudo inicializar logger: %v", err)
 	}
 
+	app.Use(func(c *fiber.Ctx) error {
+		fmt.Printf("request recibida: %s %s\n", c.Method(), c.Path())
+		return c.Next()
+	})
+
 	// Register middlewares
 	app.Use(middleware.MiddleCors()) // cors should be always in top
 	app.Use(middleware.LoggerStarter(mwLogFile, l))
@@ -59,7 +65,7 @@ func Initialize() *AppDependencies {
 	})
 
 	// Initialize repositories and services
-	userRepo := repository.NewUserRepository(dbInstance.DB)
+	userRepo := repository.NewUserRepository(dbInstance.DB, l)
 	userService := service.NewUserService(userRepo, l)
 	userHandler := users.NewUserHandler(userService, l)
 

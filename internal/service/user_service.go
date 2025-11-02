@@ -41,6 +41,7 @@ func (s *UserService) Register(ctx context.Context, u *model.User) (*model.User,
 		s.logger.Error(ctx, "Error al verificar email existente: %v", err)
 		return nil, errorsper.ErrInternal(err, "UserService.Register")
 	}
+
 	if existing != nil {
 		s.logger.Warn(ctx, "Intento de registro con email ya registrado: %s", u.Email)
 		return nil, errorsper.ErrConflict("El email ya está registrado", "UserService.Register")
