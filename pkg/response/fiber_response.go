@@ -7,6 +7,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// Siempre usar las respuestas Success o Error en los handlers de Fiber
+// Para endpoints POST usamos Created, para DELETE usamos NoContent
+// Para colecciones usamos Paginated
+// Para errores internos usamos LogAndError para tener logging estructurado
+// Para validaciones usamos ValidationError
+
 type JSONResponse struct {
 	Timestamp  string      `json:"timestamp"`
 	Path       string      `json:"path,omitempty"`
@@ -59,7 +65,6 @@ func Paginated(c *fiber.Ctx, message string, data interface{}, page, limit, tota
 }
 
 // Respuestas de error
-
 func Error(c *fiber.Ctx, code int, message string, err interface{}) error {
 	return New(c, "error", code, message, nil, err)
 }
@@ -100,10 +105,3 @@ func LogAndError(c *fiber.Ctx, log *logger.Logger, code int, message string, err
 func ValidationError(c *fiber.Ctx, validationErrs interface{}) error {
 	return Error(c, fiber.StatusUnprocessableEntity, "Validation failed", validationErrs)
 }
-
-// Recomendaciones de uso
-// Siempre usar las respuestas Success o Error en tus handlers de Fiber.
-// Para endpoints POST usamos Created, para DELETE usamos NoContent.
-// Para colecciones usamos Paginated.
-// Para errores internos usamos LogAndError para tener logging estructurado.
-// Para validaciones usamos ValidationError.
